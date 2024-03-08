@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Text Size with Center Alignment</title>
+<style>
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #F7F8FA;
+    gap: 32px;
+  }
+  #card {
+    width: 520px; /* Fixed width */
+    height: 390px; /* Fixed height */
+    background: white;
+    padding: 32px;
+    border-radius: 26px;
+    box-shadow: 0px 8px 48px 0px #EEE, 0px 4px 8px 0px rgba(10, 11, 31, 0.06), 0px 0px 1px 0px rgba(65, 71, 77, 0.25);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    margin-top: 50px;
+  }
+  #dynamicText {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%; /* Full width of the card, respecting padding */
+    height: 100%; /* Full height of the card, respecting padding */
+    font-size: 80px; /* Start with the largest font size */
+    line-height: 110%;
+    color: black; /* Text color */
+    white-space: pre-wrap; /* Allow wrapping */
+    overflow-wrap: break-word; /* Ensure words can break and wrap */
+    margin: 0;
+    padding: 32px; /* Align with card padding */
+    box-sizing: border-box;
+  }
+  textarea {
+    width: 520px; /* Same width as card */
+    margin-top: 20px;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    resize: none;
+    height: 150px;
+    font-family: Arial, sans-serif;
+  }
+</style>
+</head>
+<body>
+<div id="card">
+  <div id="dynamicText"></div>
+</div>
+<textarea id="textInput" placeholder="Type your text here"></textarea>
+<script>
+  const dynamicText = document.getElementById('dynamicText');
+  const textInput = document.getElementById('textInput');
+
+  textInput.addEventListener('input', adjustTextSize);
+
+  function adjustTextSize() {
+    const text = textInput.value;
+    dynamicText.textContent = text || 'Type your text here';
+    dynamicText.style.color = text ? 'black' : 'lightgrey';
+    resizeFontToFit(dynamicText, text);
+  }
+
+  function resizeFontToFit(element, text) {
+    const cardPadding = 32; // 32px padding on all sides
+    let minFontSize = 14;
+    let maxFontSize = 80;
+    let currentFontSize = maxFontSize;
+    element.style.fontSize = `${currentFontSize}px`;
+
+    const parentWidth = element.parentElement.offsetWidth - (cardPadding * 2); // Account for padding
+    const parentHeight = element.parentElement.offsetHeight - (cardPadding * 2); // Account for padding
+
+    element.style.whiteSpace = 'pre-wrap'; // Allow wrapping to check for height as well
+    element.style.overflowWrap = 'break-word'; // Ensure long words can break
+
+    // Adjust font size based on width and height
+    while ((element.scrollWidth > parentWidth || element.scrollHeight > parentHeight) && currentFontSize > minFontSize) {
+      currentFontSize--;
+      element.style.fontSize = `${currentFontSize}px`;
+    }
+
+    // Special case for extremely long words
+    if (isSingleLongWord(text) && (currentFontSize === minFontSize) && (element.scrollWidth > parentWidth || element.scrollHeight > parentHeight)) {
+      element.style.whiteSpace = 'break-spaces'; // Fallback for extremely long words
+    }
+  }
+
+  function isSingleLongWord(text) {
+    // Check if the text is a single word or continuous string without breaks
+    return !text.includes(' ') || text.trim().split(/\s+/).some(word => word.length > 30); // Example threshold for "too long"
+  }
+
+  // Initialize the text size on load
+  adjustTextSize();
+</script>
+</body>
+</html>
